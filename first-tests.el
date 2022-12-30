@@ -20,6 +20,7 @@
   )
 
 
+<<<<<<< HEAD
 
 (defvar openai-key-file "./key")
 
@@ -36,6 +37,8 @@
 )
 
 (default-headers)
+=======
+>>>>>>> 5c81d22... other file changes...
 
 
 
@@ -89,6 +92,90 @@
     )
   )
 
+<<<<<<< HEAD
+=======
+(defun format-model-list (list)
+  (mapcar 'cdr
+          (mapcar
+            (lambda (x) (assoc 'id (elt (cdr (assoc 'data sample)) x)))
+            (get-integers (length (cdr (assoc 'data sample))))
+
+          )
+   )
+  )
+
+(define-derived-mode chat-mode lui-mode "AI-Chat"
+(lui-set-prompt ">> ")
+
+(defvar openai-key-file "./key")
+
+(defvar openai-base-url "https://api.openai.com/v1")
+
+(defvar openai-api-key (get-string-from-file "./key"))
+
+(defvar gpt-bot-welcome-message "\nWelcome to the chat GPT bot. Ask me anything!\n")
+
+(defvar ask-gpt-default-buffer-name "*ASKGPT")
+
+
+(defun format-davinci-response (resp)
+(let* (
+       (choices (cdr (assoc 'choices resp)))
+       (n-choices (length choices))
+       (ret (mapcar
+        (lambda (x) (cdr (assoc 'text (elt choices x))))
+        (get-integers n-choices)))
+      )
+  (car ret)
+  )
+)
+
+(defun davinci-interact (x)
+  (lui-insert x)
+  (let (
+(str (format-davinci-response (make-api-request "completions" x "text-davinci-003")))
+        )
+    (lui-insert str)))
+(setq lui-input-function #'davinci-interact)
+(defun chat-get-buffer-create (name)
+  (let (
+        (buffer (get-buffer name))
+        )
+    (unless buffer
+      (setq buffer (get-buffer-create name))
+      (with-current-buffer buffer
+        (some-chat-mode)
+        ))
+    buffer
+    ))
+(defun start-chattingg (contact)
+  (let (
+        (buffer (chat-get-buffer-create (format "*Chat-%s*" contact)))
+       )
+  (with-current-buffer buffer
+    (lui-insert "Welcome to my chat emacs module")
+    (goto-char (point-max))))
+  )
+)
+(chat-mode)
+(start-chattingg "Clarissa")
+
+
+;; (interactive)
+;; (let* (
+;;        (buffer (get-buffer-create "*Chat*"))
+;;        )
+;;   (with-current-buffer buffer
+;;     (lui-insert "hello!! What do you want to ask?" t)
+;;     )
+
+;;   (lui-set-prompt "> ")
+;;   (pop-to-buffer buffer)
+;;   ))
+;; )
+;; (provide 'ai-chat-mode)
+
+>>>>>>> 5c81d22... other file changes...
 
 (defvar sample (get-model-list))
 
@@ -104,6 +191,7 @@
 
 
 (show-results model-list)
+<<<<<<< HEAD
 
 
 
@@ -152,3 +240,9 @@
             :action (lambda (x)
                       (message "Value: %s" (get-text-property 0 'property x)
                        ))))
+=======
+(show-results nada)
+> 
+>> 
+>> 
+>>>>>>> 5c81d22... other file changes...
