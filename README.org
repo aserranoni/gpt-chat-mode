@@ -1,0 +1,30 @@
+#+title: Readme
+
+* Intro
+
+This is an unofficial wrapper for the openAI [[https://beta.openai.com/docs/api-reference/completions/create?lang=curl][API]] using written in emacs lisp.
+It exposes the =start-chatting= function which opens a chat buffer with the
+=text-davinci-003= model.
+
+* Usage
+
+If you want to try this code out for yourself, the best way to do it right now is to download the code files and run =(load "path/to/file")= on some elisp REPL or even add this line to your config. You are also required to have a file containing your API key and adjust the =openai-key-file= variable accordingly.
+
+* How the code works
+
+The code on this repo is actually really simple. It formats all the required data for the request, sends your message as the prompt to the openAI model and formats the response. The fontend is displayed a [[https://github.com/emacs-circe/circe/wiki/Lui][Lui]]-type buffer. Right now, this is the only functionality that is fully implemented but you can actually call any endpoint using the =make-api-request= function (/of course/, adapting the url and more importantly the data JSON format).
+
+
+* Going further and contributing
+
+The openAI API opens up a whole miriad of possibilities and there is
+no fixed roadmap for this code, so feel free to
+implement whatever features you find useful/interesting.
+
+* Other similar initiatives
+
+While I was writing this code, I stumbled upon other cool projects doing similar things with elisp. Shoutout to [[https://github.com/joshcho/ChatGPT.el/blob/main/chatgpt.el][Josh Cho]] and [[https://gist.github.com/Gavinok/a18e0b2dac74e4ae67df35e45a170f7f][Gavinok]]
+
+* License
+
+All the code from this repo is free to use, modify, reproduce, or whatever.
