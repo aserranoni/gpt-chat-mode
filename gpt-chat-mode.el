@@ -1,4 +1,4 @@
-;;; gpt-chat-mode.el --- gpt-chat-mode is the result of me studying the lui chat interface and the openai API ---*- lexical-binding: t; -*-
+;;; gpt-chat-mode.el --- Just another emacs chatGPT app ---*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2022 Ariel Serranoni
 ;;
@@ -15,7 +15,7 @@
 ;;
 ;;; Commentary:
 ;;
-;;  Description
+;;  This code is the result of me studying emacs lisp and wrapping the openAI API.
 ;;
 ;;; Code:
 
@@ -28,24 +28,19 @@
 
   (setq lui-input-function #'davinci-interact)
   (setq lui-post-output-hook #'(lambda () (fill-region (point-min) (point-max))))
-  (lui-set-prompt "> ")
-)
+  (lui-set-prompt ">> "))
 
 
 (defun get-string-from-file (file-name)
   (with-temp-buffer (insert-file file-name)
-  (substring (buffer-string) 0 -1)
-   )
-  )
+                    (substring (buffer-string) 0 -1)))
 
 
 (defun get-integers (x)
   (let (result)
     (dotimes (i x)
       (setq result (cons i result)))
-    (reverse result)
-    )
-  )
+    (reverse result)))
 
 
 (defvar openai-key-file "~/emacs-gpt/key")
@@ -67,18 +62,14 @@
 
 (defun  format-sample-data (query model)
   (let ((data '(
-    ("model" . "dummy")
-    ("prompt" . "dummy")
-    ("max_tokens" . 2000)
-    ("temperature" . 0)
-    ("echo" . t)
-    ))
-    )
+                ("model" . "dummy")
+                ("prompt" . "dummy")
+                ("max_tokens" . 2000)
+                ("temperature" . 0)
+                ("echo" . t))))
     (setcdr (elt data 0) model)
     (setcdr (elt data 1) query)
-    data
-  )
-  )
+    data))
 
 
 (defun make-api-request (endpoint query model)
@@ -86,59 +77,48 @@
         (url (format-api-url endpoint))
         (url-request-method "POST")
         (url-request-extra-headers default-headers)
-        (url-request-data (json-encode (format-sample-data query model)))
-        )
+        (url-request-data (json-encode (format-sample-data query model))))
 
     (with-current-buffer (url-retrieve-synchronously url)
       (goto-char (point-min))
       (re-search-forward "^$")
-      (json-read))
-    ))
+      (json-read))))
 
 (defun format-davinci-response (resp)
-(let* (
-       (choices (cdr (assoc 'choices resp)))
-       (n-choices (length choices))
-       (ret (mapcar
-        (lambda (x) (cdr (assoc 'text (elt choices x))))
-        (get-integers n-choices)))
-      )
-  (car ret)
-  )
-)
+  (let* (
+         (choices (cdr (assoc 'choices resp)))
+         (n-choices (length choices))
+         (ret (mapcar
+               (lambda (x) (cdr (assoc 'text (elt choices x))))
+               (get-integers n-choices))))
+    (car ret)))
 
 (defun davinci-interact (x)
   (let (
-(str (format-davinci-response (make-api-request "completions" x "text-davinci-003")))
-        )
+        (str (format-davinci-response (make-api-request "completions" x "text-davinci-003"))))
     (lui-insert str)
     (fill-region (point-min) (point-max))))
 
 (defun chat-get-buffer-create (name)
   (let (
-        (buffer (get-buffer name))
-        )
+        (buffer (get-buffer name)))
     (unless buffer
-      (lui-insert gpt-bot-welcome-message)
       (setq buffer (get-buffer-create name))
       (with-current-buffer buffer
         (gpt-chat-mode)
-        ))
-    buffer
-    ))
+        (lui-insert gpt-bot-welcome-message)))
+    buffer))
 
 
 ;;;###autoload
 (defun start-chatting ()
   (interactive)
   (let (
-        (buffer (chat-get-buffer-create ask-gpt-default-buffer-name))
-        )
-  (with-current-buffer buffer
-    (goto-char (point-max)))
-  (switch-to-buffer buffer)
-  )
-)
+        (buffer (chat-get-buffer-create ask-gpt-default-buffer-name)))
+    (with-current-buffer buffer
+      (goto-char (point-max)))
+    (switch-to-buffer buffer)))
+
 
 
 (provide 'gpt-chat-mode)
