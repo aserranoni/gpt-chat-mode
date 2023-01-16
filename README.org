@@ -2,7 +2,7 @@
 
 * Intro
 
-This is an unofficial wrapper for the openAI [[https://beta.openai.com/docs/api-reference/completions/create?lang=curl][API]] using written in emacs lisp.
+This is an unofficial wrapper for the openAI [[https://beta.openai.com/docs/api-reference/completions/create?lang=curl][API]] written in emacs lisp.
 It exposes the =start-chatting= function which opens a chat buffer with the
 =text-davinci-003= model.
 
