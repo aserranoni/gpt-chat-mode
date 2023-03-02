@@ -26,7 +26,7 @@
 
 (define-derived-mode gpt-chat-mode lui-mode "AI-Chat"
 
-  (setq lui-input-function #'davinci-interact)
+  (setq lui-input-function #'interact-gpt-assistant)
   (setq lui-post-output-hook #'(lambda () (fill-region (point-min) (point-max))))
   (lui-set-prompt ">> "))
 
@@ -49,7 +49,7 @@
 
 (defvar openai-api-key (get-string-from-file openai-key-file))
 
-(defvar gpt-bot-welcome-message "\nWelcome to the chat GPT bot. Ask me anything!\n")
+(defvar gpt-bot-welcome-message "\nWelcome to the chat GPT bot assistant. Ask me anything!\n")
 
 (defvar ask-gpt-default-buffer-name "*ASKGPT*")
 
@@ -60,44 +60,58 @@
 (defun format-api-url (endpoint)
   (format "%s/%s" openai-base-url endpoint))
 
-(defun  format-sample-data (query model)
-  (let ((data '(
+(defun  format-sample-data (query role model)
+  (let (
+        (messages-field '(
+                          ("role" . "dummy")
+                          ("content" . "dummy")
+                          ))
+        (data '(
                 ("model" . "dummy")
-                ("prompt" . "dummy")
+                ("messages" . "dummy")
                 ("max_tokens" . 2000)
-                ("temperature" . 0)
-                ("echo" . t))))
+                ("temperature" . 0))))
     (setcdr (elt data 0) model)
-    (setcdr (elt data 1) query)
+    (setcdr (elt messages-field 1) query)
+    (setcdr (elt messages-field 0) role)
+    (setcdr (elt data 1) (list messages-field))
     data))
 
+;(format-sample-data "Hey There" "user" "gpt-3.5-turbo")
 
-(defun make-api-request (endpoint query model)
+
+(defun make-api-request (endpoint query role model)
   (let (
         (url (format-api-url endpoint))
         (url-request-method "POST")
         (url-request-extra-headers default-headers)
-        (url-request-data (json-encode (format-sample-data query model))))
+        (url-request-data (json-encode (format-sample-data query role model))))
 
     (with-current-buffer (url-retrieve-synchronously url)
       (goto-char (point-min))
       (re-search-forward "^$")
       (json-read))))
 
-(defun format-davinci-response (resp)
-  (let* (
-         (choices (cdr (assoc 'choices resp)))
-         (n-choices (length choices))
-         (ret (mapcar
-               (lambda (x) (cdr (assoc 'text (elt choices x))))
-               (get-integers n-choices))))
-    (car ret)))
+;(defvar sample-response (make-api-request "chat/completions" "Hey There" "user" "gpt-3.5-turbo"))
+;(cdr (assoc 'content (cdr (car (elt (cdr (assoc 'choices sample-response)) 0)))))
 
-(defun davinci-interact (x)
+
+(defun format-gpt-response (resp)
+  (cdr (assoc 'content (cdr (car (elt (cdr (assoc 'choices resp)) 0)))))
+  )
+
+;(format-gpt-response sample-response)
+
+(defun gpt-interact (x role)
   (let (
-        (str (format-davinci-response (make-api-request "completions" x "text-davinci-003"))))
+    (str (format-gpt-response (make-api-request "chat/completions" x role "gpt-3.5-turbo"))))
     (lui-insert str)
     (fill-region (point-min) (point-max))))
+
+
+(defun interact-gpt-assistant (x)
+  (gpt-interact x "assistant")
+  )
 
 (defun chat-get-buffer-create (name)
   (let (
@@ -108,7 +122,6 @@
         (gpt-chat-mode)
         (lui-insert gpt-bot-welcome-message)))
     buffer))
-
 
 ;;;###autoload
 (defun start-chatting ()
